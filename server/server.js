@@ -16,8 +16,10 @@ connectDB()
 const app=express()
 app.use(cors()) //enable cross origin resource sharing
 
+app.get('/',(req,res)=>res.send("API is working"))
+
 //middleware
-app.use(clerkMiddleware())
+//app.use(clerkMiddleware())
 app.use(express.json)
 
 
@@ -25,7 +27,7 @@ app.use(express.json)
 // API TO LISTEN CLERK WEBHOOK
 app.use("/api/clerk",clerkWebhooks)
 
-app.get('/',(req,res)=>res.send("API is working"))
+
 
 const PORT=process.env.PORT || 3000;//if that port is available on the environment rariable then we will use that otherwise we will use port no. 300
 app.listen(PORT,()=> console.log(`server running on port ${PORT}`)) //app.listen start this backend server
