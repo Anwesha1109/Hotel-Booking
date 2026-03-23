@@ -16,12 +16,13 @@ connectDB()
 const app=express()
 app.use(cors()) //enable cross origin resource sharing
 
-app.get('/',(req,res)=>res.send("API is working"))
+
 
 //middleware
-//app.use(clerkMiddleware())
+app.use(clerkMiddleware())
 app.use(express.json)
 
+app.get('/',(req,res)=>res.send("API is working"))
 
 
 // API TO LISTEN CLERK WEBHOOK
