@@ -12,6 +12,6 @@ const UserSchema=mongoose.Schema({
 
 },{timestamps:true})//automatically time stamp is added when the user is created
 
-const user=mongoose.model("User",userSchema)
+const user=mongoose.model("User",UserSchema)
 
 export default user;
