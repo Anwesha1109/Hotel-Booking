@@ -6,9 +6,8 @@ const UserSchema=mongoose.Schema({
     email:{type:String,required:true},
     image:{type:String,required:true},
     role:{type:String,enum:["user","hotelOwner"],default:"user"},//role of the person using the  website
-    recentSearhedCities:{type:String,required:true},
+    recentSearhedCities:{type:String,default:" "},
     
-
 
 },{timestamps:true})//automatically time stamp is added when the user is created
 
