@@ -13,12 +13,19 @@ const  clerkWebhooks = async (req,res)=>{
             "svix-signature":req.headers["svix-signature"],
         }
 
+        console.log("Webhook reached");
+
         //verifying Headers
         await whook.verify(JSON.stringify(req.body),headers)
+
+        console.log("Verified ✅");
+
 
 
         //getting data from request body
         const {data,type}=req.body
+
+        console.log("Event:", type);
 
         const userData={
             _id:data.id,

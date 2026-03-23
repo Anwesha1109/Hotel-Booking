@@ -27,7 +27,11 @@ app.use(express.json())
 
 
 // API TO LISTEN CLERK WEBHOOK
-app.use("/api/clerk",clerkWebhooks)
+app.post(
+  "/api/clerk",
+  express.raw({ type: "application/json" }),
+  clerkWebhooks
+);
 
 
 
