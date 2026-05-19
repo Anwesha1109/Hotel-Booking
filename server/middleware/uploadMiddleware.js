@@ -1,18 +1,10 @@
 import multer from "multer";
-import path from "path";
-import fs from "fs";
-
-const uploadDir = "uploads/";
-
-// Create uploads folder if it doesn't exist
-if (!fs.existsSync(uploadDir)) {
-  fs.mkdirSync(uploadDir);
-}
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, uploadDir);
+    cb(null, "/tmp");
   },
+
   filename: function (req, file, cb) {
     cb(null, Date.now() + "-" + file.originalname);
   },
