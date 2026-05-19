@@ -1,24 +1,76 @@
 import React, { useEffect } from 'react'
 import { useParams } from 'react-router-dom'
-import { facilityIcons, roomCommonData, roomsDummyData } from '../assets/assets'
+import { facilityIcons, roomCommonData } from '../assets/assets'
 import StarRating from '../components/StarRating'
 import { assets } from '../assets/assets'
 import { useState } from 'react'
+import { useAppContext } from '../context/AppContext'
+import toast from 'react-hot-toast'
 
 
 const RoomDetails = () =>{
     const {id}=useParams()
+    const {axios,rooms,getToken,navigate}=useAppContext();
     const [room,setRoom]=useState(null)
     // final room that will be shown on the screen,this is the initial codition
     const [mainImage,setMainImage]=useState(null)
+    const [checkInDate,setCheckIndate]=useState(null);
+    const [checkOutDate,setCheckOutdate]=useState(null);
+    const [guests,setGuests]=useState(null);
+
+    const [isAvailable,setIsAvailable]=useState(false);
+    //check the availability  of the room 
+    const checkAvailability= async()=>{
+        try {
+            //check is check-in Date is greater than check-out date
+            if(checkInDate>=checkOutDate){
+                toast.error('check-in date should be less than checkout date')
+                return;
+            } 
+            const {data}=await axios.post('/api/bookings/check-availability',{room:id,checkInDate,checkOutDate})
+            if(data.success){
+                if(data.isAvailable){
+                    setIsAvailable(true)
+                    toast.success('Room is available')
+                }else{
+                    setIsAvailable(false)
+                    toast.error('Room is not available')
+                }
+            }else{
+                toast.error(data.message)
+            }
+        } catch (error) {
+            toast.error(error.message)
+        }
+    }
+
+    const onSubmitHandler=async (e)=>{
+        try {
+            e.preventDefault();
+            if(!isAvailable){
+                return checkAvailability();
+            }else{
+                const {data}=await axios.post('/api/bookings/book',{room:id,checkInDate,checkOutDate,guests,paymentMethod:"Pay At Hotel"},{headers:{Authorization:`Bearer ${await getToken()}`}})
+                if(data.success){
+                    toast.success(data.message)
+                    navigate('/my-bookings')
+                    scrollTo(0,0)
+                }else{
+                    toast.error(data.message)
+                }
+            }
+        } catch (error) {
+            toast.error(data.message)
+        }
+    }
 
     useEffect(()=>{
-        const SelectedRoom= roomsDummyData.find(room => room._id===id)
+        const SelectedRoom= rooms.find(room => room._id===id)
         // 👉 Inner room = loop variable,temporaray variable used for searching
         // 👉 Outer room = final selected room and it is defined inside the useeffect only
         SelectedRoom && setRoom(SelectedRoom)
         SelectedRoom && setMainImage(SelectedRoom.images[0])
-    },[id])
+    },[rooms])
     return room && (
         <div className='py-28 md:py-35 px-4 md:px-16 lg:px-24 xl:px-32'>
             {/* Romm details */}
@@ -70,32 +122,32 @@ const RoomDetails = () =>{
 
             </div>
             {/* check-in check-out form */}
-            <form className='flex flex-col md:flex-row items-start md:items-center justify-between bg-white shadow-[0px_0px_20px_rgba(0,0,0,0.15)] p-6 rounded-xl mx-auto mt-16 max-w-6xl'>
+            <form onSubmit={onSubmitHandler} className='flex flex-col md:flex-row items-start md:items-center justify-between bg-white shadow-[0px_0px_20px_rgba(0,0,0,0.15)] p-6 rounded-xl mx-auto mt-16 max-w-6xl'>
                 {/* input fields */}
                 <div className='flex flex-col flex-wrap md:flex-row items-start md:items-center gap-4 md:gap-10 text-gray-500'>
                     <div className='flex flex-col'>
                         <label htmlFor='checkInDate' className='font-medium'>Check-In</label>
-                        <input type="date" id='checkInDate' placeholder='Check-In'
+                        <input onChange={(e)=>setCheckIndate(e.target.value)} min={new Date().toISOString().split('T')[0]} type="date" id='checkInDate' placeholder='Check-In'
                         className='w-full rounded border border-gray-300 px-3 py-3 mt-1,5 outline-none' required/>
                     </div>
                     {/* vertical lines */}
                     <div className='w-px h-15 bg-gray-300/70 max-md:hidden'></div> 
                      <div className='flex flex-col'>
                         <label htmlFor='checkOutDate' className='font-medium'>Check-Out</label>
-                        <input type="date" id='checkOutDate' placeholder='Check-Out'
+                        <input onChange={(e)=>setCheckOutdate(e.target.value)} min={checkInDate} disabled={!checkInDate} type="date" id='checkOutDate' placeholder='Check-Out'
                         className='w-full rounded border border-gray-300 px-3 py-3 mt-1,5 outline-none' required/>
                     </div>
                     <div className='w-px h-15 bg-gray-300/70 max-md:hidden'></div>
                      <div className='flex flex-col'>
                         <label htmlFor='guests' className='font-medium'>Guests</label>
-                        <input type="number" id='guests' placeholder='0'
+                        <input onChange={(e)=>setGuests(e.target.value)} value={guests} type="number" id='guests' placeholder='1'
                         className='mx-w-20 rounded border border-gray-300 px-3 py-2 mt-1.5 outline-none' required/>
                     </div>
 
 
                 </div>
                 <button type='submit' className='bg-primary hover:bg-primary-dull active:scale-95 transition-all text-white rounded-md max-md:w-full max-md:mt-6 md:px-25 py-3 md:py=3 md:py-4 text-base cursor-pointer'>
-                    Check Availability
+                   {isAvailable?"Book Now" :"Check Availability"}
                 </button>
             </form>
             {/* common specifications */}
